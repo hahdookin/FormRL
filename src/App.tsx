@@ -16,6 +16,7 @@ import {
   NavbarText,
   NavItem,
   NavLink,
+  Progress,
   Row,
   UncontrolledDropdown,
   UncontrolledPopover,
@@ -163,6 +164,14 @@ export default function App() {
           </DropdownMenu>
         </UncontrolledDropdown>
       </Navbar>
+      <Row className="justify-content-center m-4">
+        <Col sm={6}>
+          <Progress
+            value={(curFormItemIndex / formItems.length) * 100}
+            animated
+          />
+        </Col>
+      </Row>
 
       <Row className="justify-content-center m-4">
         <Col sm={6} className="border">
@@ -185,13 +194,13 @@ export default function App() {
         </Col>
       </Row>
 
-      <h2>
+      <p>
         Level: {curFloor} of {Object.keys(dungeon).length}
         <br />
         FormItemIndex: {curFormItemIndex} of {formItems.length - 1}
         <br />
         Fatigue: {curFatigue}
-      </h2>
+      </p>
     </div>
   );
 }

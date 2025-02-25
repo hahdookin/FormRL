@@ -7,9 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json}\""
   },
   "dependencies": {
+    "@uidotdev/usehooks": "^2.4.1",
+    "prettier": "^3.5.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "reactstrap": "^9.2.3"
