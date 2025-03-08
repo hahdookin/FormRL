@@ -96,13 +96,9 @@ const FormItem = ({ formItem, markDoneFn, isDone }: any) => {
           value={inputState}
           onChange={(e) => {
             setInputState(e.target.value);
-            if (e.target.value === expected) {
-              markDoneFn();
-            }
+            markDoneFn(e.target.value === expected);
           }}
-        >
-          Hello
-        </Input>
+        />
       </FormGroup>
     );
   }
@@ -130,18 +126,15 @@ const generateDungeon = ({ player }: { player: Player }) => {
     const floorNumber = i + 1;
     const floor: any = {};
 
-    floor.formItems = [...Array(5)].map(() => {
-      return { type: "button" };
-    });
     floor.formItems = [
-      { type: "button", prompt: "Click this button" },
+      { type: "button", prompt: `Click this button: ${floorNumber}` },
       {
         type: "input",
         prompt: "Enter you first name",
         expected: player.firstName,
       },
-      { type: "date", prompt: "Select today's date" },
     ];
+    // { type: "date", prompt: "Select today's date" },
 
     dungeon[floorNumber] = floor;
   }
@@ -172,6 +165,7 @@ export default function App() {
   const [curFloor, setCurFloor] = useState(1);
   const [curFormItemIndex, setCurFormItemIndex] = useState(0);
   const [curFormItemDone, setCurFormItemDone] = useState(false);
+  const [inBetweenFloors, setInBetweenFloors] = useState(false);
 
   const maxFatigue = 10;
   const [curFatigue, setCurFatigue] = useState(maxFatigue);
@@ -182,17 +176,11 @@ export default function App() {
   const onNextClicked = () => {
     const nextFormItem = curFormItemIndex + 1;
     if (nextFormItem >= formItems.length) {
-      setCurFloor(curFloor + 1);
-      setCurFormItemIndex(0);
-    } else {
-      setCurFormItemIndex(curFormItemIndex + 1);
+      setInBetweenFloors(true);
     }
+    setCurFormItemIndex(curFormItemIndex + 1);
     setCurFormItemDone(false);
-  };
 
-  const finishCurFormItem = () => {
-    if (curFormItemDone) return;
-    setCurFormItemDone(true);
     setCurFatigue(curFatigue - 1);
   };
 
@@ -238,22 +226,43 @@ export default function App() {
 
         <Row className="justify-content-center m-4">
           <Col sm={6} className="border">
-            <Form className="p-1 m-1">
-              <FormItem
-                formItem={formItems[curFormItemIndex]}
-                isDone={curFormItemDone}
-                markDoneFn={finishCurFormItem}
-              />
-            </Form>
-            <div className="m-auto mb-4" style={{ width: "fit-content" }}>
-              <Button
-                color="primary"
-                disabled={!curFormItemDone}
-                onClick={onNextClicked}
-              >
-                Next
-              </Button>
-            </div>
+            {inBetweenFloors ? (
+              <>
+                <Form className="p-1 m-1">
+                    <>Choose an upgrade</>
+                </Form>
+                <div className="m-auto mb-4" style={{ width: "fit-content" }}>
+                    <Button
+                      onClick={() => {
+                        setInBetweenFloors(false);
+                        setCurFloor(curFloor + 1);
+                        setCurFormItemIndex(0);
+                      }}
+                    >
+                      Next
+                    </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Form className="p-1 m-1">
+                  <FormItem
+                    formItem={formItems[curFormItemIndex]}
+                    isDone={curFormItemDone}
+                    markDoneFn={setCurFormItemDone}
+                  />
+                </Form>
+                <div className="m-auto mb-4" style={{ width: "fit-content" }}>
+                  <Button
+                    color="primary"
+                    disabled={!curFormItemDone}
+                    onClick={onNextClicked}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
           </Col>
         </Row>
 
