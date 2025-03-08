@@ -30,6 +30,19 @@ import {
 } from "reactstrap";
 // import "./styles.css";
 
+interface CountdownTimerProps {
+  seconds: number;
+}
+const CountdownTimer = ({ seconds }: CountdownTimerProps) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+
+  const formattedMinutes = String(m); //.padStart(2, '0');
+  const formattedSeconds = String(s).padStart(2, "0");
+
+  return <>{`${formattedMinutes}:${formattedSeconds}`}</>;
+};
+
 interface Player {
   firstName: string;
   lastName: string;
@@ -49,7 +62,13 @@ const SplashScreen = ({ showSplash, setShowSplash }) => {
               <CardSubtitle className="text-muted">
                 <h6>Its pretty dificult</h6>
               </CardSubtitle>
-              <CardText>Some text here!</CardText>
+              <CardText>
+                The server will hold you spot in the download queue for
+                <b>5 minutes</b> while you fille out the required forms.
+              </CardText>
+              <CardText>
+                Can you complete the forms and maintain your sanity?
+              </CardText>
               <Fade timeout={2000}>
                 <Button color="primary" onClick={() => setShowSplash(false)}>
                   Start
@@ -156,9 +175,34 @@ const PlayerInfo = ({ player }: PlayerInfoProps) => {
   );
 };
 
+const useCountdown = () => {
+  const [seconds, setSeconds] = useState<number>(300);
+  const [intervalId, setIntervalId] = useState();
+  const startCountdown = (seconds: number) => {
+    setSeconds(seconds);
+    const id = setInterval(() => {
+      setSeconds((prev) => prev - 1);
+    }, 1000);
+    setIntervalId(id);
+  };
+
+  useEffect(() => {
+    if (intervalId && seconds === 0) {
+      console.log("clearing");
+      clearInterval(intervalId);
+      setIntervalId();
+      return () => clearInterval(intervalId);
+    }
+  }, [intervalId, seconds]);
+
+  return { startCountdown, seconds, isActive: intervalId !== undefined };
+};
+
 export default function App() {
   const player = useMemo(() => generatePlayer(), []);
   const dungeon = useMemo(() => generateDungeon({ player }), []);
+
+  const { startCountdown, seconds, isActive } = useCountdown();
 
   const [showSplash, setShowSplash] = useState(false);
 
@@ -184,6 +228,12 @@ export default function App() {
     setCurFatigue(curFatigue - 1);
   };
 
+  useEffect(() => {
+    if (!showSplash && !isActive) {
+      startCountdown(500);
+    }
+  }, [showSplash]);
+
   if (showSplash) {
     return (
       <SplashScreen showSplash={showSplash} setShowSplash={setShowSplash} />
@@ -192,7 +242,7 @@ export default function App() {
 
   return (
     <div className="App">
-      <Fade in={!showSplash}>
+      <Fade>
         <Navbar className="bg-body-tertiary">
           <NavbarBrand href="/">FormRL</NavbarBrand>
           <Nav className="me-auto">
@@ -217,6 +267,9 @@ export default function App() {
         </Navbar>
         <Row className="justify-content-center m-4">
           <Col sm={6}>
+            <Label>
+              <CountdownTimer seconds={seconds} />
+            </Label>
             <Progress
               value={(curFormItemIndex / formItems.length) * 100}
               animated
@@ -225,44 +278,49 @@ export default function App() {
         </Row>
 
         <Row className="justify-content-center m-4">
-          <Col sm={6} className="border">
-            {inBetweenFloors ? (
-              <>
-                <Form className="p-1 m-1">
-                    <>Choose an upgrade</>
-                </Form>
-                <div className="m-auto mb-4" style={{ width: "fit-content" }}>
+          <Col sm={6}>
+            <Card className="mx-auto">
+              <CardBody>
+                {inBetweenFloors ? (
+                  <>
+                    <Form className="p-1 m-1">
+                      <>Choose an upgrade</>
+                    </Form>
+                    <div
+                      className="m-auto mb-4"
+                      style={{ width: "fit-content" }}
+                    >
+                      <Button
+                        onClick={() => {
+                          setInBetweenFloors(false);
+                          setCurFloor(curFloor + 1);
+                          setCurFormItemIndex(0);
+                        }}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Form className="p-1 m-1">
+                      <FormItem
+                        formItem={formItems[curFormItemIndex]}
+                        isDone={curFormItemDone}
+                        markDoneFn={setCurFormItemDone}
+                      />
+                    </Form>
                     <Button
-                      onClick={() => {
-                        setInBetweenFloors(false);
-                        setCurFloor(curFloor + 1);
-                        setCurFormItemIndex(0);
-                      }}
+                      color="primary"
+                      disabled={!curFormItemDone}
+                      onClick={onNextClicked}
                     >
                       Next
                     </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <Form className="p-1 m-1">
-                  <FormItem
-                    formItem={formItems[curFormItemIndex]}
-                    isDone={curFormItemDone}
-                    markDoneFn={setCurFormItemDone}
-                  />
-                </Form>
-                <div className="m-auto mb-4" style={{ width: "fit-content" }}>
-                  <Button
-                    color="primary"
-                    disabled={!curFormItemDone}
-                    onClick={onNextClicked}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </>
-            )}
+                  </>
+                )}
+              </CardBody>
+            </Card>
           </Col>
         </Row>
 
