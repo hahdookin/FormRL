@@ -6,6 +6,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Fade,
   Form,
   FormGroup,
   Input,
@@ -20,6 +21,12 @@ import {
   Row,
   UncontrolledDropdown,
   UncontrolledPopover,
+  ModalFooter,
+  Card,
+  CardBody,
+  CardTitle,
+  CardSubtitle,
+  CardText,
 } from "reactstrap";
 // import "./styles.css";
 
@@ -28,6 +35,33 @@ interface Player {
   lastName: string;
   email: string;
 }
+
+const SplashScreen = ({ showSplash, setShowSplash }) => {
+  return (
+    <Fade in={showSplash}>
+      <div className="App">
+        <Row className="align-items-center" style={{ height: "80vh" }}>
+          <Card className="w-50 mx-auto">
+            <CardBody>
+              <CardTitle>
+                <h4>You are trying to download a PDF</h4>
+              </CardTitle>
+              <CardSubtitle className="text-muted">
+                <h6>Its pretty dificult</h6>
+              </CardSubtitle>
+              <CardText>Some text here!</CardText>
+              <Fade timeout={2000}>
+                <Button color="primary" onClick={() => setShowSplash(false)}>
+                  Start
+                </Button>
+              </Fade>
+            </CardBody>
+          </Card>
+        </Row>
+      </div>
+    </Fade>
+  );
+};
 
 const randomChance = (x: number, y: number) => {
   return Math.random() <= x / y;
@@ -113,6 +147,8 @@ export default function App() {
   const dungeon = useMemo(() => generateDungeon(), []);
   const player = useMemo(() => generatePlayer(), []);
 
+  const [showSplash, setShowSplash] = useState(true);
+
   const [curFloor, setCurFloor] = useState(1);
   const [curFormItemIndex, setCurFormItemIndex] = useState(0);
   const [curFormItemDone, setCurFormItemDone] = useState(false);
@@ -140,67 +176,75 @@ export default function App() {
     setCurFatigue(curFatigue - 1);
   };
 
+  if (showSplash) {
+    return (
+      <SplashScreen showSplash={showSplash} setShowSplash={setShowSplash} />
+    );
+  }
+
   return (
     <div className="App">
-      <Navbar className="bg-body-tertiary">
-        <NavbarBrand href="/">FormRL</NavbarBrand>
-        <Nav className="me-auto">
-          <NavItem>
-            <NavLink href="/components/">Components</NavLink>
-          </NavItem>
-        </Nav>
+      <Fade in={!showSplash}>
+        <Navbar className="bg-body-tertiary">
+          <NavbarBrand href="/">FormRL</NavbarBrand>
+          <Nav className="me-auto">
+            <NavItem>
+              <NavLink href="/components/">Components</NavLink>
+            </NavItem>
+          </Nav>
 
-        <UncontrolledDropdown nav inNavbar style={{ listStyle: "none" }}>
-          <DropdownToggle caret>
-            Welcome <b>{player.firstName}</b>
-          </DropdownToggle>
-          <DropdownMenu right>
-            <DropdownItem active={false}>
-              <PlayerInfo player={player} />
-            </DropdownItem>
-            <DropdownItem>Option 2</DropdownItem>
-            <DropdownItem divider />
-            <DropdownItem>Reset</DropdownItem>
-          </DropdownMenu>
-        </UncontrolledDropdown>
-      </Navbar>
-      <Row className="justify-content-center m-4">
-        <Col sm={6}>
-          <Progress
-            value={(curFormItemIndex / formItems.length) * 100}
-            animated
-          />
-        </Col>
-      </Row>
-
-      <Row className="justify-content-center m-4">
-        <Col sm={6} className="border">
-          <Form className="p-1 m-1">
-            <FormItem
-              formItem={formItems[curFormItemIndex]}
-              isDone={curFormItemDone}
-              markDownFn={finishCurFormItem}
+          <UncontrolledDropdown nav inNavbar style={{ listStyle: "none" }}>
+            <DropdownToggle caret>
+              Welcome <b>{player.firstName}</b>
+            </DropdownToggle>
+            <DropdownMenu right>
+              <DropdownItem active={false}>
+                <PlayerInfo player={player} />
+              </DropdownItem>
+              <DropdownItem>Option 2</DropdownItem>
+              <DropdownItem divider />
+              <DropdownItem>Reset</DropdownItem>
+            </DropdownMenu>
+          </UncontrolledDropdown>
+        </Navbar>
+        <Row className="justify-content-center m-4">
+          <Col sm={6}>
+            <Progress
+              value={(curFormItemIndex / formItems.length) * 100}
+              animated
             />
-          </Form>
-          <div className="m-auto mb-4" style={{ width: "fit-content" }}>
-            <Button
-              color="primary"
-              disabled={!curFormItemDone}
-              onClick={onNextClicked}
-            >
-              Next
-            </Button>
-          </div>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
 
-      <p>
-        Level: {curFloor} of {Object.keys(dungeon).length}
-        <br />
-        FormItemIndex: {curFormItemIndex} of {formItems.length - 1}
-        <br />
-        Fatigue: {curFatigue}
-      </p>
+        <Row className="justify-content-center m-4">
+          <Col sm={6} className="border">
+            <Form className="p-1 m-1">
+              <FormItem
+                formItem={formItems[curFormItemIndex]}
+                isDone={curFormItemDone}
+                markDownFn={finishCurFormItem}
+              />
+            </Form>
+            <div className="m-auto mb-4" style={{ width: "fit-content" }}>
+              <Button
+                color="primary"
+                disabled={!curFormItemDone}
+                onClick={onNextClicked}
+              >
+                Next
+              </Button>
+            </div>
+          </Col>
+        </Row>
+
+        <p>
+          Level: {curFloor} of {Object.keys(dungeon).length}
+          <br />
+          FormItemIndex: {curFormItemIndex} of {formItems.length - 1}
+          <br />
+          Fatigue: {curFatigue}
+        </p>
+      </Fade>
     </div>
   );
 }
