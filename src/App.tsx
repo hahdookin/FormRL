@@ -67,8 +67,9 @@ const randomChance = (x: number, y: number) => {
   return Math.random() <= x / y;
 };
 
-const FormItem = ({ formItem, markDownFn, isDone }: any) => {
+const FormItem = ({ formItem, markDoneFn, isDone }: any) => {
   const { type, prompt } = formItem;
+  const [inputState, setInputState] = useState("");
 
   if (type === "button") {
     return (
@@ -78,7 +79,7 @@ const FormItem = ({ formItem, markDownFn, isDone }: any) => {
           valid={isDone}
           type="button"
           value="Click"
-          onClick={() => markDownFn(true)}
+          onClick={() => markDoneFn(true)}
         >
           Hello
         </Input>
@@ -86,10 +87,20 @@ const FormItem = ({ formItem, markDownFn, isDone }: any) => {
     );
   }
   if (type === "input") {
+    const { expected } = formItem;
     return (
       <FormGroup>
         <Label>{prompt}</Label>
-        <Input valid={isDone} value="Input" onClick={() => markDownFn(true)}>
+        <Input
+          valid={isDone}
+          value={inputState}
+          onChange={(e) => {
+            setInputState(e.target.value);
+            if (e.target.value === expected) {
+              markDoneFn();
+            }
+          }}
+        >
           Hello
         </Input>
       </FormGroup>
@@ -107,7 +118,12 @@ const generatePlayer = (): Player => {
   return player;
 };
 
-const generateDungeon = () => {
+interface FormItem {
+  type: "button" | "input" | "date";
+  prompt: string;
+}
+
+const generateDungeon = ({ player }: { player: Player }) => {
   const dungeon: any = {};
   const NUM_FLOORS = 3;
   for (let i = 0; i < NUM_FLOORS; i++) {
@@ -119,7 +135,11 @@ const generateDungeon = () => {
     });
     floor.formItems = [
       { type: "button", prompt: "Click this button" },
-      { type: "input", prompt: "Enter you first name" },
+      {
+        type: "input",
+        prompt: "Enter you first name",
+        expected: player.firstName,
+      },
       { type: "date", prompt: "Select today's date" },
     ];
 
@@ -144,10 +164,10 @@ const PlayerInfo = ({ player }: PlayerInfoProps) => {
 };
 
 export default function App() {
-  const dungeon = useMemo(() => generateDungeon(), []);
   const player = useMemo(() => generatePlayer(), []);
+  const dungeon = useMemo(() => generateDungeon({ player }), []);
 
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
 
   const [curFloor, setCurFloor] = useState(1);
   const [curFormItemIndex, setCurFormItemIndex] = useState(0);
@@ -222,7 +242,7 @@ export default function App() {
               <FormItem
                 formItem={formItems[curFormItemIndex]}
                 isDone={curFormItemDone}
-                markDownFn={finishCurFormItem}
+                markDoneFn={finishCurFormItem}
               />
             </Form>
             <div className="m-auto mb-4" style={{ width: "fit-content" }}>
