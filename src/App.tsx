@@ -20,7 +20,6 @@ import {
   Progress,
   Row,
   UncontrolledDropdown,
-  UncontrolledPopover,
   ModalFooter,
   Card,
   CardBody,
@@ -28,6 +27,7 @@ import {
   CardSubtitle,
   CardText,
 } from "reactstrap";
+import SplashScreen from "./SplashScreen";
 // import "./styles.css";
 
 interface CountdownTimerProps {
@@ -48,39 +48,6 @@ interface Player {
   lastName: string;
   email: string;
 }
-
-const SplashScreen = ({ showSplash, setShowSplash }) => {
-  return (
-    <Fade in={showSplash}>
-      <div className="App">
-        <Row className="align-items-center" style={{ height: "80vh" }}>
-          <Card className="w-50 mx-auto">
-            <CardBody>
-              <CardTitle>
-                <h4>You are trying to download a PDF</h4>
-              </CardTitle>
-              <CardSubtitle className="text-muted">
-                <h6>Its pretty dificult</h6>
-              </CardSubtitle>
-              <CardText>
-                The server will hold you spot in the download queue for
-                <b>5 minutes</b> while you fille out the required forms.
-              </CardText>
-              <CardText>
-                Can you complete the forms and maintain your sanity?
-              </CardText>
-              <Fade timeout={2000}>
-                <Button color="primary" onClick={() => setShowSplash(false)}>
-                  Start
-                </Button>
-              </Fade>
-            </CardBody>
-          </Card>
-        </Row>
-      </div>
-    </Fade>
-  );
-};
 
 const randomChance = (x: number, y: number) => {
   return Math.random() <= x / y;
